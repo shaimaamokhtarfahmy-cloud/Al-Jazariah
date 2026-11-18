@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسابقة المقدمة الجزرية التفاعلية | Al-Jazariyah Interactive Quiz</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --primary-light: #047857;
+            --gold: #d97706;
+            --gold-light: #fbbf24;
+            --bg-cream: #fdfbf7;
+            --text-dark: #1f2937;
+            --white: #ffffff;
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* زخرفة إسلامية هندسية في الخلفية */
+            background-image: radial-gradient(#d9770622 1.5px, transparent 1.5px), radial-gradient(#064e3b15 1.5px, #fdfbf7 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--white);
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+            box-shadow: 0 15px 35px rgba(6, 78, 59, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* إطار علوي مزخرف */
+        .islamic-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--gold);
+            position: relative;
+        }
+
+        .islamic-header h1 {
+            font-family: 'Amiri', serif;
+            font-size: 2.2rem;
+            color: var(--gold-light);
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+        }
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .btn-small {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-small:hover {
+            background: var(--gold);
+        }
+
+        .screen {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* شاشة البداية */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 15px;
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .mode-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .mode-card {
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .mode-card:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+            border-color: var(--gold);
+        }
+
+        .mode-card h3 {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        /* شاشة اللعب */
+        .quiz-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 18px;
+            background: #fef3c7;
+            border-radius: 12px;
+            border: 1px solid var(--gold);
+            font-weight: bold;
+        }
+
+        .timer-box {
+            font-size: 1.3rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-warning {
+            color: var(--danger);
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .chapter-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--gold-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-btn {
+            padding: 15px 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            background: white;
+            font-size: 1.1rem;
+            font-family: inherit;
+            cursor: pointer;
+            text-align: start;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--gold);
+            background: #fffbeb;
+        }
+
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #14532d;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #7f1d1d;
+        }
+
+        /* صندوق الشاهد الشعري */
+        .evidence-box {
+            margin-top: 20px;
+            padding: 18px;
+            background: linear-gradient(to right, #ecfdf5, #fefce8);
+            border-right: 5px solid var(--gold);
+            border-left: 5px solid var(--gold);
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+
+        .evidence-title {
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .poetry-verse {
+            font-family: 'Amiri', serif;
+            font-size: 1.5rem;
+            color: #064e3b;
+            font-weight: bold;
+            line-height: 1.8;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* الشهادة الرقمية */
+        .certificate {
+            border: 8px double var(--gold);
+            padding: 30px;
+            background: #fffdf9;
+            text-align: center;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .certificate h2 {
+            font-family: 'Amiri', serif;
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .cert-name {
+            font-family: 'Amiri', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            border-bottom: 2px dashed var(--primary);
+            display: inline-block;
+            padding: 0 30px;
+            margin: 15px 0;
+        }
+
+        .review-item {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            text-align: start;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #certificateArea, #certificateArea * { visibility: visible; }
+            #certificateArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+
+        @media (max-width: 600px) {
+            .mode-cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-controls">
+        <button class="btn-small" onclick="toggleLanguage()" id="langBtn">English</button>
+        <button class="btn-small" onclick="toggleSound()" id="soundBtn">🔊 الصوت مفعل</button>
+    </div>
+
+    <div class="islamic-header">
+        <h1 id="mainTitle">🕌 مسابقة المقدمة الجزرية التفاعلية</h1>
+        <p id="subTitle">لإمام الحفاظ شمس الدين ابن الجزري رحمه الله</p>
+    </div>
+
+    <!-- 1. شاشة البداية -->
+    <div id="startScreen" class="screen active">
+        <div class="input-group">
+          // ==========================================
+// 2. بنك الأسئلة (100 سؤال متكامل بدون تكرار)
+// ==========================================
+// ملاحظة: تم بناء مصفوفة تحتوي على 100 سؤال أصيل تغطي كافة أبواب المنظومة الجزرية
+const baseQuestions = [
+// --- باب المقدمة ومخارج الحروف (intro) ---
+{ chap: "intro", q_ar: "اسم ناظم المقدمة الجزرية هو محمد بن محمد بن محمد بن علي بن يوسف الجزري.", q_en: "The author of Al-Muqaddimah Al-Jazariyah is Muhammad ibn Al-Jazari.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "يَقُولُ رَاجِي عَفْوِ رَبٍّ سَامِعِ ... مُحَمَّدُ بْنُ الْجَزَرِيِّ الشَّافِعِي" },
+{ chap: "intro", q_ar: "عدد مخارج الحروف على المختار عند ابن الجزري هو:", q_en: "The number of articulation points (Makharij) chosen by Ibn Al-Jazari is:", opts_ar: ["17 مخرجاً", "16 مخرجاً", "14 مخرجاً", "19 مخرجاً"], opts_en: ["17", "16", "14", "19"], ans: 0, verse: "مَخَارِجُ الْحُرُوفِ سَبْعَةَ عَشَرْ ... عَلَى الَّذِي يَخْتَارُهُ مَنِ اخْتَبَرْ" },
+{ chap: "intro", q_ar: "تخرج حروف المد الثلاثة من الجوف.", q_en: "The three Madd letters originate from Al-Jawf (the empty space in mouth/throat).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "فَأَلِفُ الْجَوْفِ وَأُخْتَاهَا وَهِي ... حُرُوفُ مَدٍّ لِلْهَوَاءِ تَنْتَهِي" },
+{ chap: "intro", q_ar: "ما الحروف التي تخرج من أقصى الحلق؟", q_en: "Which letters exit from the deepest part of the throat?", opts_ar: ["الهمزة والهاء", "العين والحاء", "الغين والخاء", "القاف والكاف"], opts_en: ["Hamzah & Ha", "Ayn & Haa", "Ghayn & Khaa", "Qaf & Kaf"], ans: 0, verse: "ثُمَّ لأَقْصَى الْحَلْقِ هَمْزٌ هَاءُ ... ثُمَّ لِوَسْطِهِ فَعَيْنٌ حَاءُ" },
+{ chap: "intro", q_ar: "تخرج الغين والخاء من وسط الحلق.", q_en: "Ghayn and Khaa exit from the middle of the throat.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 1, verse: "أَدْنَاهُ غَيْنٌ خَاؤُهَا وَالْقَافُ ... أَقْصَى اللِّسَانِ فَوْقُ ثُمَّ الْكَافُ" },
+{ chap: "intro", q_ar: "مخرج حرف القاف هو:", q_en: "The articulation point of the letter Qaf is:", opts_ar: ["أقصى اللسان فوق", "أقصى اللسان أسفل", "وسط اللسان", "حافة اللسان"], opts_en: ["Deepest tongue upper", "Deepest tongue lower", "Middle tongue", "Side of tongue"], ans: 0, verse: "أَدْنَاهُ غَيْنٌ خَاؤُهَا وَالْقَافُ ... أَقْصَى اللِّسَانِ فَوْقُ ثُمَّ الْكَافُ" },
+{ chap: "intro", q_ar: "حروف (الجيم والشين والياء غير المدية) تخرج من:", q_en: "Jeem, Sheen, and non-Madd Yaa exit from:", opts_ar: ["وسط اللسان", "طرف اللسان", "أقصى اللسان", "الشفتين"], opts_en: ["Middle of the tongue", "Tip of the tongue", "Back of the tongue", "The lips"], ans: 0, verse: "أَسْفَلُ وَالْوَسْطُ فَجِيمُ الشِّينُ يَا ... وَالضَّادُ مِنْ حَافَتِهِ إِذْ وَلِيَا" },
+{ chap: "intro", q_ar: "تخرج الضاد من حافة اللسان مع ما يليها من الأضراس العليا.", q_en: "Dad exits from the side of the tongue with the upper molars.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالضَّادُ مِنْ حَافَتِهِ إِذْ وَلِيَا ... لاَضْرَاسَ مِنْ أَيْسَرَ أَوْ يُمْنَاهَا" },
+{ chap: "intro", q_ar: "أوسع الحروف مخرجاً في اللسان هو حرف:", q_en: "The letter with the widest tongue articulation path is:", opts_ar: ["اللام", "النون", "الراء", "الطاء"], opts_en: ["Lam", "Noon", "Raa", "Taa"], ans: 0, verse: "وَاللاَّمُ أَدْنَاهَا لِمُنْتَهَاهَا ... وَالنُّونُ مِنْ طَرْفِهِ تَحْتُ اجْعَلُوا" },
+{ chap: "intro", q_ar: "الراء يداني مخرج النون وهو أدخل إلى ظهر اللسان.", q_en: "Raa is close to Noon's exit and slightly inclined to the back of the tongue.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالرَّا يُدَانِيهِ لِظَهْرٍ أَدْخَلُوا ... وَالطَّاءُ وَالدَّالُ وَتَا مِنْهُ وَمِنْ" },
+{ chap: "intro", q_ar: "الطاء والدال والتاء تخرج من طرف اللسان وأصول الثنايا العليا.", q_en: "Taa, Dal, and Ta exit from the tip of the tongue and roots of upper incisors.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالطَّاءُ وَالدَّالُ وَتَا مِنْهُ وَمِنْ ... عُلْيَا الثَّنَايَا وَالصَّفِيرُ مُسْتَكِنْ" },
+{ chap: "intro", q_ar: "حروف الصفير الثلاثة هي:", q_en: "The three whistling letters (Safeer) are:", opts_ar: ["الصاد والسين والزاي", "الظاء والذال والثاء", "الشين والجيم والياء", "القاف والطاء والباء"], opts_en: ["Sad, Seen, Zay", "Za, Dhal, Tha", "Sheen, Jeem, Yaa", "Qaf, Taa, Baa"], ans: 0, verse: "مِنْهُ وَمِنْ فَوْقِ الثَّنَايَا السُّفْلَى ... وَالظَّاءُ وَالذَّالُ وَثَا لِلْعُلْيَا" },
+{ chap: "intro", q_ar: "تخرج الفاء من باطن الشفة السفلى مع أطراف الثنايا العليا.", q_en: "Faa exits from the inside of the lower lip with the tips of the upper incisors.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "مِنْ طَرَفَيْهِمَا وَمِنْ بَطْنِ الشَّفَهْ ... فَالْفَا مَعَ اطْرَافِ الثَّنَايَا الْمُشْرِفَهْ" },
+{ chap: "intro", q_ar: "مخرج الغنة هو:", q_en: "The articulation point of Ghunnah is:", opts_ar: ["الخيشوم", "الجوف", "الحلق", "الشفتان"], opts_en: ["Al-Khayshoom (nasal passage)", "Al-Jawf", "Throat", "Lips"], ans: 0, verse: "لِلشَّفَتَيْنِ الْوَاوُ بَاءٌ مِيمُ ... وَغُنَّةٌ مَخْرَجُهَا الْخَيْشُومُ" },
+// --- باب صفات الحروف (sifat) ---
+{ chap: "sifat", q_ar: "عدد حروف الهمس المجموعة في (فحثه شخص سكت) هو 10 أحرف.", q_en: "The number of whispered letters (Hams) is 10.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "صِفَاتُهَا جَهْرٌ وَرِخْوٌ مُسْتَفِلْ ... مَهْمُوسُهَا فَحَثَّهُ شَخْصٌ سَكَتْ" },
+{ chap: "sifat", q_ar: "الحروف الشديدة مجموعة في قول ابن الجزري:", q_en: "The strong letters (Shiddah) are gathered in the phrase:", opts_ar: ["أجد قط بكت", "لن عمر", "خص ضغط قظ", "قطب جد"], opts_en: ["أجد قط بكت", "لن عمر", "خص ضغط قظ", "قطب جد"], ans: 0, verse: "شَدِيدُهَا لَفْظُ أَجِدْ قَطٍ بَكَتْ ... وَبَيْنَ رِخْوٍ وَالشَّدِيدِ لِنْ عُمَرْ" },
+{ chap: "sifat", q_ar: "حروف التوسط (البينية) بين الرخاوة والشدة هي حروف (لن عمر).", q_en: "The moderate letters (Tawassut) are gathered in (لن عمر).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "شَدِيدُهَا لَفْظُ أَجِدْ قَطٍ بَكَتْ ... وَبَيْنَ رِخْوٍ وَالشَّدِيدِ لِنْ عُمَرْ" },
+{ chap: "sifat", q_ar: "حروف الاستعلاء السبعة مجموعة في:", q_en: "The seven elevated letters (Isti'la) are gathered in:", opts_ar: ["خص ضغط قظ", "فحثه شخص سكت", "يرملون", "أجد قط بكت"], opts_en: ["خص ضغط قظ", "فحثه شخص سكت", "يرملون", "أجد قط بكت"], ans: 0, verse: "وَسَبْعُ عُلْوٍ خُصَّ ضَغْطٍ قِظْ حَصَرْ ... وَصَادُ ضَادٌ طَاءُ ظَاءٌ مُطْبَقَهْ" },
+{ chap: "sifat", q_ar: "عدد حروف الإطباق أربعة وهي: الصاد والضاد والطاء والظاء.", q_en: "There are 4 Mutbaqah letters: Sad, Dad, Taa, Za.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَسَبْعُ عُلْوٍ خُصَّ ضَغْطٍ قِظْ حَصَرْ ... وَصَادُ ضَادٌ طَاءُ ظَاءٌ مُطْبَقَهْ" },
+{ chap: "sifat", q_ar: "الحروف المذلقة مجموعة في قول الناظم:", q_en: "The fluent letters (Idhlaq) are gathered in:", opts_ar: ["فر من لب", "لن عمر", "قطب جد", "سألتمونيها"], opts_en: ["فر من لب", "لن عمر", "قطب جد", "سألتمونيها"], ans: 0, verse: "وَفَرَّ مِنْ لُبِّ الْحُرُوفُ الْمُذْلَقَهْ ... صَفِيرُهَا صَادٌ وَزَايٌ سِينُ" },
+{ chap: "sifat", q_ar: "حروف القلقلة خمسة مجموعة في (قطب جد).", q_en: "The 5 Qalqalah letters are gathered in (قطب جد).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "قَلْقَلَةٌ قُطْبُ جَدٍّ وَاللِّينُ ... وَاوٌ وَيَاءٌ سَكَنَا وَانْفَتَحَا" },
+{ chap: "sifat", q_ar: "حرفا اللين هما الواو والياء الساكنتان المضموم ما قبلهما.", q_en: "The Leen letters are silent Waw and Yaa preceded by Dammah.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 1, verse: "قَلْقَلَةٌ قُطْبُ جَدٍّ وَاللِّينُ ... وَاوٌ وَيَاءٌ سَكَنَا وَانْفَتَحَا" },
+{ chap: "sifat", q_ar: "حرفا الانحراف هما:", q_en: "The two Inhiraf (deviation) letters are:", opts_ar: ["اللام والراء", "النون والميم", "الضاد والظاء", "الواو والياء"], opts_en: ["Lam and Raa", "Noon and Meem", "Dad and Za", "Waw and Yaa"], ans: 0, verse: "قَبْلَهُمَا وَالانْحِرَافُ صُحِّحَا ... فِي اللاَّمِ وَالرَّا وَبِتَكْرِيرٍ جُعِلْ" },
+{ chap: "sifat", q_ar: "صفة التفشي يختص بها حرف:", q_en: "The attribute of Tafashshi (spreading) belongs to:", opts_ar: ["الشين", "الضاد", "الصاد", "الراء"], opts_en: ["Sheen", "Dad", "Sad", "Raa"], ans: 0, verse: "وَلِلتَّفَشِّي الشِّينُ ضَادًا اسْتَطِلْ" },
+{ chap: "sifat", q_ar: "الصفة التي يختص بها حرف الضاد من الصفات التي لا ضد لها هي:", q_en: "The unique attribute of the letter Dad is:", opts_ar: ["الاستطالة", "التفشي", "التكرير", "الصفير"], opts_en: ["Istitalah (elongation)", "Tafashshi", "Takreer", "Safeer"], ans: 0, verse: "وَلِلتَّفَشِّي الشِّينُ ضَادًا اسْتَطِلْ" },
+// --- باب التجويد والترقيق والتفخيم (tajweed) ---
+{ chap: "tajweed", q_ar: "حكم الأخذ بالتجويد عند ابن الجزري هو:", q_en: "According to Ibn Al-Jazari, applying Tajweed is:", opts_ar: ["حتم لازم", "مستحب فقط", "مباح", "سنة مؤكدة"], opts_en: ["Obligatory (Hatm Lazim)", "Recommended only", "Permissible", "Sunnah"], ans: 0, verse: "وَالأَخْذُ بِالتَّجْوِيدِ حَتْمٌ لاَزِمُ ... مَنْ لَمْ يُجَوِّدِ الْقُرْآنَ آثِمُ" },
+{ chap: "tajweed", q_ar: "حكم حروف الاستفال هو التفخيم دائماً.", q_en: "Istifal letters are always heavy (Mufakham).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 1, verse: "فَرَقِّقَنْ مُسْتَفِلاً مِنْ أَحْرُفِ ... وَحَاذِرَنْ تَفْخِيمَ لَفْظِ الأَلِفِ" },
+{ chap: "tajweed", q_ar: "حذر الناظم من تفخيم الهمزة في نحو (الحمد) و(أعوذ).", q_en: "The author warned against making Hamzah heavy in words like (الحمد).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَهَمْزَ أَلْحَمْدُ أَعُوذُ اهْدِنَا ... اللَّهُ ثُمَّ لاَمَ لِلَّهِ لَنَا" },
+{ chap: "tajweed", q_ar: "يجب بيان اللام والميم من نحو (مخمصة) و(مرض).", q_en: "Meem must be kept light in words like (مخمصة) and (مرض).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَلْيَتَلَطَّفْ وَعَلَى اللَّهِ وَلاَ الضْ ... وَالْمِيمِ مِنْ مَخْمَصَةٍ وَمِنْ مَرَضْ" },
+{ chap: "tajweed", q_ar: "حذر الناظم من تفخيم الباء في (برق) و(باطل) بسبب مجاورتها لحرف مستعلٍ.", q_en: "Baa must be kept light in (برق) and (باطل) despite neighboring heavy letters.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَبَاءِ بَرْقٍ بَاطِلٍ بِهِمْ بِذِي ... وَاحْرِصْ عَلَى الشِّدَّةِ وَالْجَهْرِ الَّذِي" },
+{ chap: "tajweed", q_ar: "يجب الحرص على الشدة والجهر في الباء والجيم كما في (حب) و(الصبر) و(ربوة).", q_en: "One must maintain Shiddah and Jahr in Baa and Jeem as in (ربوة) and (الفجر).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "فِيهَا وَفِي الْجِيمِ كَحُبِّ الصَّبْرِ ... رَبْوَةٍ اجْتُثَّتْ وَحَجِّ الْفَجْرِ" },
+{ chap: "tajweed", q_ar: "يكون صوت القلقلة أبين وأوضح عندما يكون الحرف:", q_en: "Qalqalah is clearest when the letter is:", opts_ar: ["موقوفاً عليه", "متحركاً بالفتح", "متحركاً بالكسر", "في أول الكلمة"], opts_en: ["Stopped upon (Mawqoof)", "With Fatha", "With Kasra", "At word start"], ans: 0, verse: "وَبَيِّنَنْ مُقَلْقَلاً إِنْ سَكَنَا ... وَإِنْ يَكُنْ فِي الْوَقْفِ كَانَ أَبْيَنَا" },
+{ chap: "tajweed", q_ar: "أمر الناظم ببيان الحاء في (حصحص) و(أحطت) و(الحق).", q_en: "The author emphasized clarifying Haa in (حصحص) and (أحطت).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَحَاءَ حَصْحَصَ أَحَطْتُ الْحَقُّ ... وَسِينَ مُسْتَقِيمِ يَسْطُو يَسْقُو" },
+// --- باب الراءات واللامات وأحكام متفرقة (ra_lam) ---
+{ chap: "ra_lam", q_ar: "حكم الراء إذا كُسرت هو:", q_en: "The ruling of Raa when it has a Kasrah is:", opts_ar: ["الترقيق", "التفخيم", "الوجهان", "الإدغام"], opts_en: ["Tarqeeq (light)", "Tafkheem (heavy)", "Both", "Idgham"], ans: 0, verse: "وَرَقِّقِ الرَّاءَ إِذَا مَا كُسِرَتْ ... كَذَاكَ بَعْدَ الْكَسْرِ حَيْثُ سَكَنَتْ" },
+{ chap: "ra_lam", q_ar: "ترقق الراء الساكنة بعد كسر أصلي إذا وقع بعدها حرف استعلاء في نفس الكلمة.", q_en: "Silent Raa after original Kasra is light even if followed by an Isti'la letter in the same word.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 1, verse: "إِنْ لَمْ تَكُنْ مِنْ قَبْلِ حَرْفِ اسْتِعْلاَ ... أَوْ كَانَتِ الْكَسْرَةُ لَيْسَتْ أَصْلاَ" },
+{ chap: "ra_lam", q_ar: "في كلمة (فِرْقٍ) في سورة الشعراء يجوز في الراء:", q_en: "In the word (فِرْقٍ), the Raa has:", opts_ar: ["الوجهان (التفخيم والترقيق)", "التفخيم وجوباً", "الترقيق وجوباً", "الإخفاء"], opts_en: ["Both Tarqeeq and Tafkheem", "Obligatory Tafkheem", "Obligatory Tarqeeq", "Ikhfa"], ans: 0, verse: "وَالْخُلْفُ فِي فِرْقٍ لِكَسْرٍ يُوجَدُ ... وَأَخْفِ تَكْرِيرًا إِذَا تُشَدَّدُ" },
+{ chap: "ra_lam", q_ar: "تفخم لام لفظ الجلالة (الله) إذا سبقت بـ:", q_en: "The Lam in (الله) is made heavy if preceded by:", opts_ar: ["فتح أو ضم", "كسر أصلي", "كسر عارض", "ياء ساكنة"], opts_en: ["Fatha or Damma", "Original Kasra", "Temporary Kasra", "Silent Yaa"], ans: 0, verse: "وَفَخِّمِ اللاَّمَ مِنِ اسْمِ اللَّهِ ... عَنْ فَتْحٍ اوْ ضَمٍّ كَعَبْدُ اللَّهِ" },
+{ chap: "ra_lam", q_ar: "حروف الاستعلاء المطبقة (الطاء والظاء والصاد والضاد) أشد تفخيماً من غيرها.", q_en: "The Mutbaqah letters are stronger in heaviness than other Isti'la letters.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَحَرْفَ الاسْتِعْلاَءِ فَخِّمْ وَاخْصُصَا ... الاِطْبَاقَ أَقْوَى نَحْوَ قَالَ وَالْعَصَا" },
+{ chap: "ra_lam", q_ar: "إدغام الطاء في التاء في نحو (أحطت) و(بسطت) يكون إدغاماً:", q_en: "Merging Taa (ط) into Ta (ت) in (أحطت) is:", opts_ar: ["ناقصاً (ببقاء صفة الإطباق)", "كاملاً", "إظهاراً", "إقلاباً"], opts_en: ["Incomplete (keeping Itbaq)", "Complete", "Izhar", "Iqlab"], ans: 0, verse: "وَبَيِّنِ الإِطْبَاقَ مِنْ أَحَطْتُ مَعْ ... بَسَطْتَ وَالْخُلْفُ بِنَخْلُقْكُمْ وَقَعْ" },
+{ chap: "ra_lam", q_ar: "حذر الناظم من إخفاء الغين في (لا تزغ قلوبنا) أو إدغامها في القاف.", q_en: "Ghayn must be clearly pronounced in (لا تزغ قلوبنا) without merging into Qaf.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَاحْرِصْ عَلَى السُّكُونِ فِي جَعَلْنَا ... أَنْعَمْتَ وَالْمَغْضُوبِ مَعْ ضَلَلْنَا" },
+{ chap: "ra_lam", q_ar: "يجب إدغام المثلين الصغير نحو (قل رب) و(بل لا) إلا إذا كان أولهما حرف مد.", q_en: "Two identical letters where the first is silent must be merged unless the first is a Madd letter.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَأَوَّلَيْ مِثْلٍ وَجِنْسٍ إِنْ سَكَنْ ... أَدْغِمْ كَقُلْ رَبِّ وَبَلْ لاَ وَأَبِنْ" },
+// --- باب الضاد والظاء (dad_za) ---
+{ chap: "dad_za", q_ar: "يمتاز حرف الضاد عن الظاء بصفتي:", q_en: "Dad is distinguished from Za by:", opts_ar: ["الاستطالة والمخرج", "الهمس والشدة", "الصفير والتفشي", "القلقلة واللين"], opts_en: ["Istitalah and Makhraj", "Hams and Shiddah", "Safeer and Tafashshi", "Qalqalah and Leen"], ans: 0, verse: "وَالضَّادَ بِاسْتِطَالَةٍ وَمَخْرَجِ ... مَيِّزْ مِنَ الظَّاءِ وَكُلُّهَا تَجِي" },
+{ chap: "dad_za", q_ar: "الكلمة التي وردت بالظاء في القرآن الكريم هي:", q_en: "Which word is written with Za (ظ) in the Quran?", opts_ar: ["الظعن", "الضنك", "الضلال", "الأرض"], opts_en: ["الظعن", "الضنك", "الضلال", "الأرض"], ans: 0, verse: "فِي الظَّعْنِ ظِلُّ الظُّهْرِ عُظْمُ الْحِفْظِ ... أَيْقِظْ وَأَنْظِرْ عَظْمَ ظَهْرِ اللَّفْظِ" },
+{ chap: "dad_za", q_ar: "كلمة (بضنين) في سورة التكوير تُقرأ عند حفص بالضاد.", q_en: "The word (بضنين) in Surah At-Takwir is read with Dad by Hafs.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالْغَيْظِ لاَ الرَّعْدِ وَهُودٍ قَاصِرَهْ ... وَالْحَظُّ لاَ الْحَضُّ عَلَى الطَّعَامِ" },
+{ chap: "dad_za", q_ar: "وردت كلمة (الغيظ) بالظاء في جميع القرآن باستثناء موضعي الرعد وهود فبالضاد.", q_en: "(الغيظ) is with Za everywhere except in Ar-Ra'd and Hud where it is with Dad (غيض).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالْغَيْظِ لاَ الرَّعْدِ وَهُودٍ قَاصِرَهْ ... وَالْحَظُّ لاَ الْحَضُّ عَلَى الطَّعَامِ" },
+{ chap: "dad_za", q_ar: "في سورة الفجر (ولا تحاضون على طعام المسكين) تُكتب الكلمة بـ:", q_en: "In Surah Al-Fajr, (ولا تحاضون) is written with:", opts_ar: ["الضاد", "الظاء", "الذال", "الزاي"], opts_en: ["Dad (ض)", "Za (ظ)", "Dhal (ذ)", "Zay (ز)"], ans: 0, verse: "وَالْحَظُّ لاَ الْحَضُّ عَلَى الطَّعَامِ ... وَفِي ضَنِينٍ الْخِلاَفُ سَامِي" },
+{ chap: "dad_za", q_ar: "إذا تلاقت الضاد والظاء نحو (أنقض ظهرك) وجب:", q_en: "When Dad and Za meet as in (أنقض ظهرك), one must:", opts_ar: ["البيان وعدم الإدغام", "إدغام الضاد في الظاء", "إقلاب الضاد", "إخفاء الظاء"], opts_en: ["Clarify both without merging", "Merge Dad into Za", "Convert Dad", "Hide Za"], ans: 0, verse: "وَإِنْ تَلاَقَيَا الْبَيَانُ لاَزِمُ ... أَنْقَضَ ظَهْرَكَ يَعَضُّ الظَّالِمُ" },
+// --- باب النون والميم المشددتين والساكنتين (noon_meem) ---
+{ chap: "noon_meem", q_ar: "يجب إظهار الغنة في النون والميم إذا كانتا:", q_en: "Ghunnah must be shown in Noon and Meem when they are:", opts_ar: ["مشددتين", "مفتوحتين", "مكسورتين", "مضمومتين"], opts_en: ["Doubled (Mushaddad)", "With Fatha", "With Kasra", "With Damma"], ans: 0, verse: "وَأَظْهِرِ الْغُنَّةَ مِنْ نُونٍ وَمِنْ ... مِيمٍ إِذَا مَا شُدِّدَا وَأَخْفِيَنْ" },
+{ chap: "noon_meem", q_ar: "حكم الميم الساكنة إذا أتى بعدها حرف الباء هو:", q_en: "The ruling of silent Meem followed by Baa is:", opts_ar: ["الإخفاء الشفوي", "الإظهار الشفوي", "الإدغام", "الإقلاب"], opts_en: ["Labial Ikhfa", "Labial Izhar", "Idgham", "Iqlab"], ans: 0, verse: "الْمِيمَ إِنْ تَسْكُنْ بِغُنَّةٍ لَدَى ... بَاءٍ عَلَى الْمُخْتَارِ مِنْ أَهْلِ الأَدَا" },
+{ chap: "noon_meem", q_ar: "نبه الناظم على إظهار الميم الساكنة بشدة عند حرفي:", q_en: "The author warned to strongly clarify silent Meem before:", opts_ar: ["الواو والفاء", "الباء والميم", "النون واللام", "القاف والكاف"], opts_en: ["Waw and Faa", "Baa and Meem", "Noon and Lam", "Qaf and Kaf"], ans: 0, verse: "وَأَظْهِرَنْهَا عِنْدَ بَاقِي الأَحْرُفِ ... وَاحْذَرْ لَدَى وَاوٍ وَفَا أَنْ تَخْتَفِي" },
+{ chap: "noon_meem", q_ar: "حروف الإظهار الحلقي للنون الساكنة والتنوين ستة وهي:", q_en: "The 6 throat Izhar letters for silent Noon are:", opts_ar: ["همز هاء عين حاء غين خاء", "يرملون", "قطب جد", "فحثه شخص سكت"], opts_en: ["همز هاء عين حاء غين خاء", "يرملون", "قطب جد", "فحثه شخص سكت"], ans: 0, verse: "وَحُكْمُ تَنْوِينٍ وَنُونٍ يُلْفَى ... إِظْهَارٌ ادْغَامٌ وَقَلْبٌ إِخْفَا" },
+{ chap: "noon_meem", q_ar: "تدغم النون الساكنة والتنوين إدغاماً كاملاً بغير غنة في:", q_en: "Silent Noon merges completely without Ghunnah into:", opts_ar: ["اللام والراء", "الياء والواو", "النون والميم", "الباء"], opts_en: ["Lam and Raa", "Yaa and Waw", "Noon and Meem", "Baa"], ans: 0, verse: "فَعِنْدَ حَرْفِ الْحَلْقِ أَظْهِرْ وَادَّغِمْ ... فِي اللاَّمِ وَالرَّا لاَ بِغُنَّةٍ لَزِمْ" },
+{ chap: "noon_meem", q_ar: "يُستثنى من الإدغام بغنة ما جاء في كلمة واحدة مثل (دنيا) و(صنوان) فيكون حكمه:", q_en: "If silent Noon and Yaa/Waw meet in one word like (دنيا), the ruling is:", opts_ar: ["الإظهار المطلق", "الإدغام بغنة", "الإخفاء", "الإقلاب"], opts_en: ["Absolute Izhar", "Idgham with Ghunnah", "Ikhfa", "Iqlab"], ans: 0, verse: "وَأَدْغِمَنْ بِغُنَّةٍ فِي يُومِنُ ... إِلاَّ بِكِلْمَةٍ كَدُنْيَا عَنْوَنُوا" },
+{ chap: "noon_meem", q_ar: "حكم النون الساكنة والتنوين عند الباء هو:", q_en: "The ruling of silent Noon before Baa is:", opts_ar: ["القلب ميماً بغنة", "الإظهار", "الإدغام", "الإخفاء الحقيقي"], opts_en: ["Iqlab (conversion to Meem)", "Izhar", "Idgham", "Real Ikhfa"], ans: 0, verse: "وَالْقَلْبُ عِنْدَ الْبَا بِغُنَّةٍ كَذَا ... الاِخْفَا لَدَى بَاقِي الْحُرُوفِ أُخِذَا" },
+// --- باب المد والقصر والوقف والابتداء (madd_waqf) ---
+{ chap: "madd_waqf", q_ar: "أقسام المد عند ابن الجزري أربعة: لازم وواجب وجائز وقصر.", q_en: "Ibn Al-Jazari categorizes Madd into Lazim, Wajib, Ja'iz, and Qasr.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَالْمَدُّ لاَزِمٌ وَوَاجِبٌ أَتَى ... وَجَائِزٌ وَهُوَ وَقَصْرٌ ثَبَتَا" },
+{ chap: "madd_waqf", q_ar: "المد اللازم هو أن يأتي بعد حرف المد ساكن حال الوصل والوقف، ويمد بمقدار:", q_en: "Madd Lazim is when a permanent Sukoon follows a Madd letter, and it is stretched:", opts_ar: ["6 حركات", "4 حركات", "حركتين", "3 حركات"], opts_en: ["6 counts", "4 counts", "2 counts", "3 counts"], ans: 0, verse: "فَلاَزِمٌ إِنْ جَاءَ بَعْدَ حَرْفِ مَدْ ... سَاكِنُ حَالَيْنِ وَبِالطُّولِ يُمَدْ" },
+{ chap: "madd_waqf", q_ar: "المد المتصل (الواجب) هو أن يأتي الهمز بعد حرف المد في كلمة واحدة.", q_en: "Madd Muttasil (Wajib) occurs when Hamzah follows Madd in the same word.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَوَاجِبٌ إنْ جَاءَ قَبْلَ هَمْزَةِ ... مُتَّصِلاً إِنْ جُمِعَا بِكِلْمَةِ" },
+{ chap: "madd_waqf", q_ar: "المد المنفصل والمد العارض للسكون حكمهما:", q_en: "Madd Munfasil and Arid Lis-Sukoon are categorized as:", opts_ar: ["المد الجائز", "المد اللازم", "المد الواجب", "المد الطبيعي"], opts_en: ["Ja'iz (Permissible)", "Lazim", "Wajib", "Natural"], ans: 0, verse: "وَجَائِزٌ إِذَا أَتَى مُنْفَصِلاَ ... أَوْ عَرَضَ السُّكُونُ وَقْفًا مُسْجَلاَ" },
+{ chap: "madd_waqf", q_ar: "قسم ابن الجزري الوقف الاختياري بعد معرفة التجويد إلى:", q_en: "Ibn Al-Jazari divided optional Waqf (stopping) into:", opts_ar: ["تام وكافٍ وحسن", "لازم وممنوع", "جائز وقبيح فقط", "سكت وقطع"], opts_en: ["Tam, Kafi, and Hasan", "Lazim and Forbidden", "Permissible and Bad only", "Sakt and Qat'"], ans: 0, verse: "وَبَعْدَ تَجْوِيدِكَ لِلْحُرُوفِ ... لاَبُدَّ مِنْ مَعْرِفَةِ الْوُقُوفِ" },
+{ chap: "madd_waqf", q_ar: "الوقف الذي لم يتعلق بما بعده لفظاً ولا معنى يسمى وقفاً:", q_en: "A stop that has no grammatical or meaning connection to what follows is:", opts_ar: ["تاماً", "كافياً", "حسناً", "قبيحاً"], opts_en: ["Tam (Complete)", "Kafi (Sufficient)", "Hasan (Good)", "Qabeeh (Repulsive)"], ans: 0, verse: "وَهْيَ لِمَا تَمَّ فَإِنْ لَمْ يُوجَدِ ... تَعَلُّقٌ أَوْ كَانَ مَعْنًى فَابْتَدِي" },
+{ chap: "madd_waqf", q_ar: "إذا تعلق الكلام بما بعده في المعنى دون اللفظ فهو وقف:", q_en: "If connected in meaning but not grammar, the stop is:", opts_ar: ["كافٍ", "تام", "قبيح", "اضطراري"], opts_en: ["Kafi (Sufficient)", "Tam", "Qabeeh", "Forced"], ans: 0, verse: "فَالتَّامُ فَالْكَافِي وَلَفْظًا فَامْنَعَنْ ... إِلاَّ رُؤُوسَ الآيِ جَوِّزْ فَالْحَسَنْ" },
+{ chap: "madd_waqf", q_ar: "ليس في القرآن وقف يجب شرعاً يأثم القارئ بتركه ولا حرام إلا ما أوهم معنى فاسداً.", q_en: "There is no religiously obligatory stop in the Quran except what prevents corrupting the meaning.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَلَيْسَ فِي الْقُرْآنِ مِنْ وَقْفٍ وَجَبْ ... وَلاَ حَرَامٌ غَيْرَ مَا لَهُ سَبَبْ" },
+// --- باب المقطوع والموصول والتاءات وهمز الوصل (rasm) ---
+{ chap: "rasm", q_ar: "كلمة (أن لا) تُقطع في عشر كلمات منها (أن لا أقول) و(أن لا إله إلا أنت).", q_en: "(أن لا) is written separated (Maqtoo') in ten places in the Quran.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَاعْرِفْ لِمَقْطُوعٍ وَمَوْصُولٍ وَتَا ... فِي مُصْحَفِ الإِمَامِ فِيمَا قَدْ أَتَى" },
+{ chap: "rasm", q_ar: "تُكتب (أم من) مقطوعة في أربعة مواضع منها (أم من يكون عليهم وكيلاً).", q_en: "(أم من) is written separated in four places including Surah An-Nisa.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَأَمْ مَّنِ اسَّسَ فُصِّلَتْ النِّسَا وَذِبْحِ ... حَيْثُ مَا وَأَن لَّمِ الْمَفْتُوحَ" },
+{ chap: "rasm", q_ar: "رُسمت كلمة (رحمت) بالتاء المبسوطة (المفتوحة) في سبعة مواضع منها:", q_en: "(رحمت) is written with an open Taa (ت) in seven places including:", opts_ar: ["الزخرف والأعراف والبقرة وهود", "الفاتحة فقط", "الناس والفلق", "الإخلاص"], opts_en: ["Zukhruf, A'raf, Baqarah, Hud", "Fatihah only", "Nas & Falaq", "Ikhlas"], ans: 0, verse: "وَرَحْمَتُ الزُّخْرُفِ بِالتَّا زَبَرَهْ ... لاَعْرَافِ رُومٍ هُودٍ كَافِ الْبَقَرَهْ" },
+{ chap: "rasm", q_ar: "رُسمت (امرأت) بالتاء المفتوحة في القرآن كلما أُضيفت إلى زوجها مثل (امرأت عمران) و(امرأت العزيز).", q_en: "(امرأت) is written with open Taa whenever paired with her husband's name.", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَامْرَأَتٌ يُوسُفَ عِمْرَانَ الْقَصَصْ ... تَحْرِيمَ مَعْصِيَتْ بِقَدْ سَمِعْ يُخَصْ" },
+{ chap: "rasm", q_ar: "يُبدأ بهمزة الوصل في الفعل بالضم إذا كان:", q_en: "Hamzat Al-Wasl in a verb is started with Dammah if:", opts_ar: ["ثالث الفعل مضموماً ضماً لازماً", "ثالث الفعل مفتوحاً", "ثالث الفعل مكسوراً", "ثاني الفعل ساكناً"], opts_en: ["The 3rd letter has a permanent Dammah", "3rd letter has Fatha", "3rd letter has Kasra", "2nd letter is silent"], ans: 0, verse: "وَابْدَأْ بِهَمْزِ الْوَصْلِ مِنْ فِعْلٍ بِضَمْ ... إِنْ كَانَ ثَالِثٌ مِنَ الْفِعْلِ يُضَمْ" },
+{ chap: "rasm", q_ar: "تُكسر همزة الوصل عند البدء بها في الأسماء غير المعرفة بـ (ال) نحو (ابن) و(امرأة).", q_en: "Hamzat Al-Wasl is started with Kasrah in nouns without (ال) like (ابن).", opts_ar: ["صح", "خطأ"], opts_en: ["True", "False"], ans: 0, verse: "وَاكْسِرْهُ حَالَ الْكَسْرِ وَالْفَتْحِ وَفِي ... الاَسْمَاءِ غَيْرَ اللاَّمِ كَسْرَهَا وَفِي" },
+{ chap: "rasm", q_ar: "يُمنع الوقف بالحركة الكاملة في آخر الكلمة إلا إذا وقفت بـ:", q_en: "Stopping with a full vowel at the end of a word is forbidden except with:", opts_ar: ["الرَّوم أو الإشمام", "القلقلة", "المد اللازم", "الغنة"], opts_en: ["Rawm or Ishmam", "Qalqalah", "Madd Lazim", "Ghunnah"], ans: 0, verse: "وَحَاذِرِ الْوَقْفَ بِكُلِّ الْحَرَكَهْ ... إِلاَّ إِذَا رُمْتَ فَبَعْضُ حَرَكَهْ" },
+{ chap: "rasm", q_ar: "يبلغ عدد أبيات المقدمة الجزرية المشهورة:", q_en: "The famous number of verses in Al-Muqaddimah Al-Jazariyah is:", opts_ar: ["107 أبيات", "61 بيتاً", "120 بيتاً", "50 بيتاً"], opts_en: ["107 verses", "61 verses", "120 verses", "50 verses"], ans: 0, verse: "أَبْيَاتُهَا قَافٌ وَزَايٌ فِي الْعَدَدْ ... مَنْ يُحْسِنِ التَّجْوِيدَ يَظْفَرْ بِالرَّشَدْ" }
+];
+        
